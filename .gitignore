@@ -1,0 +1,20 @@
+# Build output (distributed via GitHub releases)
+main.js
+*.map
+
+# Dependencies
+node_modules
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Obsidian
+data.json
+
+# Environment
+.env

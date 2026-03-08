@@ -1,0 +1,10 @@
+{
+  "id": "claude-code-terminal",
+  "name": "Claude Code Terminal",
+  "version": "0.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Run Claude Code directly inside Obsidian. Opens an interactive terminal in a new tab with session persistence across restarts.",
+  "author": "Mike Stop Continues",
+  "authorUrl": "https://github.com/mikestopcontinues",
+  "isDesktopOnly": true
+}
