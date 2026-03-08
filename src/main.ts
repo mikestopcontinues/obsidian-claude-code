@@ -1,6 +1,7 @@
 import { Plugin, ItemView, WorkspaceLeaf } from "obsidian";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
+import { LigaturesAddon } from "@xterm/addon-ligatures";
 import * as path from "path";
 import * as crypto from "crypto";
 import { execSync } from "child_process";
@@ -48,6 +49,7 @@ interface ClaudeCodeState {
 class ClaudeCodeView extends ItemView {
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
+  private ligaturesAddon: LigaturesAddon | null = null;
   private ptyProcess: any = null;
   private resizeObserver: ResizeObserver | null = null;
   private sessionId: string | null = null;
@@ -98,12 +100,17 @@ class ClaudeCodeView extends ItemView {
 
     const terminalEl = container.createDiv({ cls: "claude-code-terminal" });
 
+    const s = getComputedStyle(document.body);
+    const monoFont = s.getPropertyValue("--font-monospace").trim();
+    const baseSize = parseInt(s.getPropertyValue("--font-text-size").trim(), 10) || 14;
+    const codeScale = parseFloat(s.getPropertyValue("--code-size").trim()) || 0.875;
+    const fontSize = Math.round(baseSize * codeScale);
+
     this.fitAddon = new FitAddon();
     this.terminal = new Terminal({
       cursorBlink: true,
-      fontSize: 14,
-      fontFamily:
-        "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace",
+      fontSize,
+      fontFamily: monoFont || "Menlo, monospace",
       theme: this.getObsidianTheme(),
       allowProposedApi: true,
       scrollback: 10000,
@@ -140,6 +147,12 @@ class ClaudeCodeView extends ItemView {
       return true;
     });
     this.terminal.open(terminalEl);
+    try {
+      this.ligaturesAddon = new LigaturesAddon();
+      this.terminal.loadAddon(this.ligaturesAddon);
+    } catch (e) {
+      console.warn("Claude Code Terminal: ligatures addon failed to load:", e);
+    }
 
     setTimeout(() => {
       this.fitAddon?.fit();
@@ -285,6 +298,8 @@ class ClaudeCodeView extends ItemView {
       this.ptyProcess.kill();
       this.ptyProcess = null;
     }
+    this.ligaturesAddon?.dispose();
+    this.ligaturesAddon = null;
     this.terminal?.dispose();
     this.terminal = null;
   }
