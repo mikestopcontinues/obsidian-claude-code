@@ -61,6 +61,8 @@ class ClaudeCodeView extends ItemView {
     super(leaf);
   }
 
+  navigation = true;
+
   getViewType(): string {
     return VIEW_TYPE;
   }
@@ -108,10 +110,40 @@ class ClaudeCodeView extends ItemView {
     });
 
     this.terminal.loadAddon(this.fitAddon);
+    this.terminal.attachCustomKeyEventHandler((e: KeyboardEvent) => {
+      // Prevent Escape from bubbling to Obsidian (which would
+      // steal focus from the terminal on the second press).
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        return true;
+      }
+      // Shift+Enter / Alt+Enter: send kitty-protocol sequences.
+      // Block all event types (keydown, keypress, keyup) to prevent
+      // xterm from also sending a bare \r on keypress.
+      if (e.key === "Enter" && (e.shiftKey || e.altKey)) {
+        if (e.type === "keydown") {
+          this.ptyProcess?.write(
+            e.shiftKey ? "\x1b[13;2u" : "\x1b[13;3u",
+          );
+        }
+        return false;
+      }
+      // Cmd+Left/Right → Home/End
+      if (e.metaKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        if (e.type === "keydown") {
+          this.ptyProcess?.write(
+            e.key === "ArrowLeft" ? "\x1bOH" : "\x1bOF",
+          );
+        }
+        return false;
+      }
+      return true;
+    });
     this.terminal.open(terminalEl);
 
     setTimeout(() => {
       this.fitAddon?.fit();
+      this.terminal?.focus();
       this.spawnClaude();
     }, 100);
 
