@@ -61,7 +61,7 @@ class ClaudeCodeView extends ItemView {
     super(leaf);
   }
 
-  navigation = true;
+  navigation = false;
 
   getViewType(): string {
     return VIEW_TYPE;
@@ -193,6 +193,44 @@ class ClaudeCodeView extends ItemView {
 
     const args: string[] = [];
 
+    // Include user's global Claude settings if available.
+    const homeDir = process.env.HOME;
+    if (homeDir) {
+      const settingsPath = path.join(homeDir, ".claude", "settings.json");
+      try {
+        require("fs").accessSync(settingsPath);
+        args.push("--settings", settingsPath);
+      } catch {
+        // no user settings file
+      }
+    }
+
+    // Always allow vault-relevant tools.
+    args.push(
+      "--allowedTools",
+      `Read(${this.vaultPath})`,
+      `Glob(${this.vaultPath})`,
+      `Grep(${this.vaultPath})`,
+      `Edit(${this.vaultPath})`,
+      `Write(${this.vaultPath})`,
+      "Agent(*)",
+      "WebFetch(domain:*)",
+      "WebSearch",
+    );
+
+    args.push("--allow-dangerously-skip-permissions");
+
+    args.push(
+      "--append-system-prompt",
+      [
+        `You are working inside an Obsidian vault at: ${this.vaultPath}`,
+        "Use /obsidian skills for vault-aware operations (markdown, canvas, bases, CLI).",
+        `If the skills are not installed, the user can add them: "/plugin marketplace add kepano/obsidian-skills" / "/plugin install obsidian@obsidian-skills"`,
+        "Prioritize reading within the folder(s) the user is focused on, but you may read across the entire vault if it serves the goal.",
+        "Write and edit freely within the user's focused folder(s), but ask before modifying notes outside of them, even if it seems aligned with the goal.",
+      ].join(" "),
+    );
+
     if (this.isResuming && this.sessionId) {
       args.push("--resume", this.sessionId);
       this.isResuming = false;
@@ -317,6 +355,7 @@ export default class ClaudeCodeTerminalPlugin extends Plugin {
       hotkeys: [{ modifiers: ["Mod", "Shift"], key: "Escape" }],
       callback: () => this.openNewTab(),
     });
+
   }
 
   async openNewTab(): Promise<void> {

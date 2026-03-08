@@ -10,6 +10,9 @@
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  max-width: 90ch;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .claude-code-terminal .xterm {

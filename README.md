@@ -8,9 +8,13 @@ Run [Claude Code](https://docs.anthropic.com/en/docs/claude-code) directly insid
 
 - **Runs in the vault directory** — Claude Code launches with your vault as the working directory, so it can read and edit your notes directly.
 - **Multiple sessions** — Open as many Claude Code tabs as you want. Each runs independently.
+- **Pinned tabs** — Claude Code tabs never get replaced when you click files in the explorer. Navigation always opens a new tab.
 - **Session persistence** — Conversations survive across app restarts. Close Obsidian, reopen it, and pick up right where you left off.
 - **Theme-aware terminal** — Colors are pulled from your active Obsidian theme at launch. Light mode, dark mode, custom themes — it all matches.
+- **Centered layout** — The terminal has a max width of 90ch and centers in the pane for comfortable reading.
 - **Full terminal emulation** — Powered by xterm.js with proper PTY support via node-pty. Colors, cursor movement, scrollback, interactive input — everything works.
+- **Vault-aware permissions** — Read, write, search, and agent tools are pre-allowed within the vault. Web access is enabled by default. User settings from `~/.claude/settings.json` are loaded automatically.
+- **Obsidian skill support** — The system prompt encourages use of `/obsidian` skills for vault-aware operations and tells the model how to install them.
 
 ## Requirements
 
